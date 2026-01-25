@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Basketball AI Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #121212;
+            color: #FFFFFF;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+        
+        /* Header */
+        .header {
+            background: #1E1E1E;
+            padding: 60px 20px 20px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #FFFFFF;
+        }
+        
+        .header p {
+            color: #B3B3B3;
+            font-size: 14px;
+        }
+        
+        /* Status Grid */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 20px;
+        }
+        
+        .status-card {
+            background: #2A2A2A;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .status-card.active {
+            background: linear-gradient(135deg, rgba(255,107,0,0.2) 0%, rgba(255,107,0,0.1) 100%);
+            border: 1px solid rgba(255,107,0,0.3);
+        }
+        
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: #FF6B00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .status-card.inactive .status-icon {
+            background: #444;
+            opacity: 0.5;
+        }
+        
+        .status-info h3 {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        
+        .status-info p {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        /* Upload Section */
+        .upload-section {
+            padding: 20px;
+        }
+        
+        .upload-box {
+            background: linear-gradient(135deg, #FF6B00 0%, #FF8534 100%);
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-box:active {
+            transform: scale(0.98);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .upload-box h2 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .upload-box p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .upload-box input[type="file"] {
+            display: none;
+        }
+        
+        /* File Info */
+        .file-info {
+            display: none;
+            background: #2A2A2A;
+            border-radius: 16px;
+            padding: 16px;
+            margin: 16px 20px;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .file-info.show {
+            display: flex;
+        }
+        
+        .file-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: #FF6B00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .file-details {
+            flex: 1;
+        }
+        
+        .file-details strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .file-details span {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        /* Analysis Type */
+        .analysis-type {
+            padding: 0 20px 20px 20px;
+        }
+        
+        .analysis-type h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        .analysis-options {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-bottom: 8px;
+        }
+        
+        .analysis-options::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .option-chip {
+            background: #2A2A2A;
+            border: 2px solid transparent;
+            border-radius: 24px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .option-chip.selected {
+            background: #FF6B00;
+            border-color: #FF6B00;
+        }
+        
+        .option-chip input {
+            display: none;
+        }
+        
+        /* Action Button */
+        .action-button {
+            margin: 0 20px 20px 20px;
+            background: linear-gradient(135deg, #FF6B00 0%, #FF8534 100%);
+            border: none;
+            border-radius: 16px;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 800;
+            color: #FFFFFF;
+            width: calc(100% - 40px);
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 16px rgba(255,107,0,0.3);
+        }
+        
+        .action-button:active {
+            transform: scale(0.98);
+        }
+        
+        .action-button:disabled {
+            background: #444;
+            opacity: 0.5;
+            box-shadow: none;
+        }
+        
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #2A2A2A;
+            border-top: 4px solid #FF6B00;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading h3 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .loading p {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        /* Results */
+        .results-section {
+            display: none;
+            padding: 20px;
+        }
+        
+        .results-section.show {
+            display: block;
+        }
+        
+        .results-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .results-header h2 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .result-card {
+            background: #2A2A2A;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .result-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #FF6B00;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .result-card video {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .stat-box {
+            background: #1E1E1E;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #FF6B00;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .download-btn {
+            display: block;
+            background: #FF6B00;
+            color: #FFFFFF;
+            text-decoration: none;
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 700;
+            margin-top: 12px;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1E1E1E;
+            border-top: 1px solid #2A2A2A;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            padding: 8px 0;
+            z-index: 100;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            color: #888;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .nav-item.active {
+            color: #FF6B00;
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        /* Webcam Button */
+        .webcam-button {
+            background: #2A2A2A;
+            border: 2px solid #FF6B00;
+            border-radius: 16px;
+            padding: 18px;
+            margin: 0 20px 20px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #FF6B00;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .webcam-button:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>Basketball AI</h1>
+        <p>Professional shot & dribble analysis</p>
+    </div>
+
+    <!-- Status Grid -->
+    <div class="status-grid">
+        <div class="status-card {% if shot_analysis %}active{% else %}inactive{% endif %}">
+            <div class="status-icon">🎯</div>
+            <div class="status-info">
+                <h3>Shot Analysis</h3>
+                <p>Pose & mechanics</p>
+            </div>
+        </div>
+        
+        <div class="status-card {% if shot_detection %}active{% else %}inactive{% endif %}">
+            <div class="status-icon">🏀</div>
+            <div class="status-info">
+                <h3>Shot Detection</h3>
+                <p>Make/miss tracking</p>
+            </div>
+        </div>
+        
+        <div class="status-card {% if dribble_yolo %}active{% else %}inactive{% endif %}">
+            <div class="status-icon">⚡</div>
+            <div class="status-info">
+                <h3>Dribble Counter</h3>
+                <p>YOLOv8 tracking</p>
+            </div>
+        </div>
+        
+        <div class="status-card {% if dribble_gradio %}active{% else %}inactive{% endif %}">
+            <div class="status-icon">📊</div>
+            <div class="status-info">
+                <h3>Advanced Stats</h3>
+                <p>Detailed metrics</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Webcam Option -->
+    <a href="/webcam" class="webcam-button">
+        <span class="nav-icon">📹</span>
+        Live Webcam Analysis
+    </a>
+
+    <!-- Upload Section -->
+    <div class="upload-section">
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📤</div>
+                <h2>Upload Video</h2>
+                <p>Tap to select a basketball video</p>
+                <input type="file" id="fileInput" name="file" accept="video/*" required>
+            </div>
+        </form>
+    </div>
+    
+    <!-- File Info -->
+    <div class="file-info" id="fileInfo">
+        <div class="file-icon">🎬</div>
+        <div class="file-details">
+            <strong id="fileName"></strong>
+            <span id="fileSize"></span>
+        </div>
+    </div>
+    
+    <!-- Analysis Type Selection -->
+    <div class="analysis-type">
+        <h3>Analysis Type</h3>
+        <div class="analysis-options">
+            <label class="option-chip selected">
+                <input type="radio" name="analysis_type" value="all" checked>
+                All Analysis
+            </label>
+            <label class="option-chip">
+                <input type="radio" name="analysis_type" value="shot_analysis">
+                Shot Analysis
+            </label>
+            <label class="option-chip">
+                <input type="radio" name="analysis_type" value="shot_detection">
+                Shot Detection
+            </label>
+            <label class="option-chip">
+                <input type="radio" name="analysis_type" value="dribble_yolo">
+                Dribble Count
+            </label>
+            <label class="option-chip">
+                <input type="radio" name="analysis_type" value="dribble_gradio">
+                Advanced Stats
+            </label>
+        </div>
+    </div>
+    
+    <!-- Analyze Button -->
+    <button type="submit" class="action-button" id="analyzeBtn" form="uploadForm">
+        Analyze Video
+    </button>
+    
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <h3>Analyzing...</h3>
+        <p>Processing your basketball video</p>
+    </div>
+    
+    <!-- Results -->
+    <div class="results-section" id="results">
+        <div class="results-header">
+            <h2>Analysis Complete! ✅</h2>
+        </div>
+        <div id="resultsContainer"></div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="/" class="nav-item active">
+            <div class="nav-icon">🏀</div>
+            Analyze
+        </a>
+        <a href="/webcam" class="nav-item">
+            <div class="nav-icon">📹</div>
+            Live
+        </a>
+    </div>
+    
+    <script>
+        // File selection
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = file.name;
+                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                document.getElementById('fileSize').textContent = `${sizeMB} MB`;
+                document.getElementById('fileInfo').classList.add('show');
+            }
+        });
+        
+        // Analysis option selection
+        document.querySelectorAll('.option-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                document.querySelectorAll('.option-chip').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+        
+        // Form submission
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            
+            analyzeBtn.disabled = true;
+            loading.classList.add('show');
+            results.classList.remove('show');
+            
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                displayResults(data);
+                
+                loading.classList.remove('show');
+                results.classList.add('show');
+                analyzeBtn.disabled = false;
+                
+                // Scroll to results
+                results.scrollIntoView({ behavior: 'smooth' });
+                
+            } catch (error) {
+                alert('Analysis failed. Please try again.');
+                loading.classList.remove('show');
+                analyzeBtn.disabled = false;
+            }
+        });
+        
+        function displayResults(data) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+            
+            for (const [analysisType, result] of Object.entries(data.analyses)) {
+                if (!result || result.error) continue;
+                
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                
+                const icon = {
+                    'shot_analysis': '🎯',
+                    'shot_detection': '🏀',
+                    'dribble_yolo': '⚡',
+                    'dribble_gradio': '📊'
+                }[analysisType] || '📈';
+                
+                const title = analysisType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                
+                let content = `<h3>${icon} ${title}</h3>`;
+                
+                // Video player
+                if (result.output_video) {
+                    const videoName = result.output_video.split('/').pop();
+                    content += `
+                        <video controls playsinline>
+                            <source src="/outputs/${videoName}" type="video/mp4">
+                        </video>
+                        <a href="/outputs/${videoName}" download class="download-btn">
+                            ⬇️ Download Video
+                        </a>
+                    `;
+                }
+                
+                // Stats for dribble counter
+                if (result.total_dribbles !== undefined) {
+                    content += `
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-value">${result.total_dribbles}</div>
+                                <div class="stat-label">Dribbles</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${result.ball_detections || 0}</div>
+                                <div class="stat-label">Ball Detected</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${result.fps || 0}</div>
+                                <div class="stat-label">FPS</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${(result.duration_seconds || 0).toFixed(1)}s</div>
+                                <div class="stat-label">Duration</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                card.innerHTML = content;
+                container.appendChild(card);
+            }
+        }
+    </script>
+</body>
+</html>
