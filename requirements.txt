@@ -7,9 +7,9 @@ opencv-python==4.8.0.76
 opencv-contrib-python==4.8.0.76
 
 # Deep Learning
-torch==2.0.1
-torchvision==0.15.2
-tensorflow==2.13.0
+torch>=2.0.0
+torchvision>=0.15.0
+tensorflow>=2.13.0
 
 # YOLO
 ultralytics==8.0.196
