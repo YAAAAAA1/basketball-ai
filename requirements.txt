@@ -14,9 +14,6 @@ tensorflow==2.13.0
 # YOLO
 ultralytics==8.0.196
 
-# Object Detection
-detectron2 @ git+https://github.com/facebookresearch/detectron2.git
-
 # Gradio Interface
 gradio==3.50.2
 
@@ -34,8 +31,7 @@ requests==2.31.0
 python-dotenv==1.0.0
 tqdm==4.66.1
 
-# Pose Estimation (OpenPose)
-pyopenpose @ git+https://github.com/CMU-Perceptual-Computing-Lab/openpose.git#subdirectory=python
+
 
 # Video Processing
 moviepy==1.0.3
